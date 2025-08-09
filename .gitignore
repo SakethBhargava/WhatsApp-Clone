@@ -1,0 +1,19 @@
+# Dependencies
+/backend/node_modules
+/frontend/node_modules
+
+# Environment variables
+# Never commit .env files!
+/backend/.env
+/frontend/.env
+
+# Production build folder (from React)
+/frontend/build
+
+# Log files
+*.log
+npm-debug.log*
+
+# System files
+.DS_Store
+Thumbs.db
