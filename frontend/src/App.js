@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+// --- Configuration ---
+// This now directly uses the environment variable.
+// For local development, it will use the value from your .env.local file.
+// For production, it will use the value you set in Netlify.
+const API_URL = process.env.REACT_APP_API_URL;
+
 // --- Helper Functions ---
 const formatTimestamp = (isoString) => {
     if (!isoString) return '...';
@@ -39,7 +45,7 @@ const MessageBubble = ({ msg }) => {
 };
 
 const ChatInterface = ({ selectedConversation, messages, newMessage, setNewMessage, handleSendMessage, isSending, messagesEndRef, onBack }) => (
-    <div className="flex flex-col h-full bg-gray-100">
+    <div className="flex flex-col h-full bg-gray-200">
         <header className="flex items-center p-3 bg-gray-100 border-b border-gray-300">
             <button onClick={onBack} className="lg:hidden mr-2 p-2 rounded-full hover:bg-gray-200">
                 <ArrowLeftIcon />
@@ -99,8 +105,7 @@ function App() {
 
     const fetchData = async () => {
         try {
-            // Use relative path for local development, which the proxy will handle
-            const response = await fetch('/api/messages');
+            const response = await fetch(`${API_URL}/api/messages`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             if (data.success) {
@@ -142,7 +147,7 @@ function App() {
         if (!newMessage.trim() || !selectedConversation) return;
         setIsSending(true);
         try {
-            const response = await fetch('/api/messages', {
+            const response = await fetch(`${API_URL}/api/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ wa_id: selectedConversation.id, text: newMessage, name: selectedConversation.name }),
@@ -166,7 +171,7 @@ function App() {
             for (const file of files) {
                 const text = await file.text();
                 const payload = JSON.parse(text);
-                await fetch('/api/webhook', {
+                await fetch(`${API_URL}/api/webhook`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ metaData: payload.metaData }),
