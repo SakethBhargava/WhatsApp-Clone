@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// --- Configuration ---
-// This now directly uses the environment variable.
-// For local development, it will use the value from your .env.local file.
-// For production, it will use the value you set in Netlify.
-const API_URL = process.env.REACT_APP_API_URL;
-
 // --- Helper Functions ---
 const formatTimestamp = (isoString) => {
     if (!isoString) return '...';
@@ -45,7 +39,7 @@ const MessageBubble = ({ msg }) => {
 };
 
 const ChatInterface = ({ selectedConversation, messages, newMessage, setNewMessage, handleSendMessage, isSending, messagesEndRef, onBack }) => (
-    <div className="flex flex-col h-full bg-gray-200">
+    <div className="flex flex-col h-full w-full bg-cover bg-center" style={{backgroundImage: "url('https://i.redd.it/qwd83nc4xxf41.jpg')"}}>
         <header className="flex items-center p-3 bg-gray-100 border-b border-gray-300">
             <button onClick={onBack} className="lg:hidden mr-2 p-2 rounded-full hover:bg-gray-200">
                 <ArrowLeftIcon />
@@ -56,12 +50,14 @@ const ChatInterface = ({ selectedConversation, messages, newMessage, setNewMessa
                 <p className="text-xs text-gray-500">{selectedConversation.id}</p>
             </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 bg-cover bg-center" style={{backgroundImage: "url('https://i.redd.it/qwd83nc4xxf41.jpg')"}}>
-            {messages.map((msg) => <MessageBubble key={msg.id || msg._id} msg={msg} />)}
-            <div ref={messagesEndRef} />
+        <main className="flex-1 overflow-y-auto p-4">
+            <div className="max-w-4xl mx-auto w-full">
+                {messages.map((msg) => <MessageBubble key={msg.id || msg._id} msg={msg} />)}
+                <div ref={messagesEndRef} />
+            </div>
         </main>
         <footer className="p-3 bg-gray-100">
-            <form onSubmit={handleSendMessage} className="flex items-center">
+            <form onSubmit={handleSendMessage} className="flex items-center max-w-4xl mx-auto">
                 <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message" className="flex-1 px-4 py-2 mr-3 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500" disabled={isSending}/>
                 <button type="submit" className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:bg-gray-400" disabled={isSending || !newMessage.trim()}>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
@@ -74,7 +70,7 @@ const ChatInterface = ({ selectedConversation, messages, newMessage, setNewMessa
 const WelcomeScreen = () => (
     <div className="flex flex-col items-center justify-center h-full w-full bg-gray-100 text-center p-8 border-l border-gray-300 hidden lg:flex">
         <div className="max-w-lg">
-            <img src="https://static.whatsapp.net/rsrc.php/v3/y7/r/DSxOAUB0raA.png" alt="WhatsApp Web" className="w-20 h-20 mx-auto" />
+            <img src="https://static.whatsapp.net/rsrc.php/v3/y7/r/DSxOAUB0raA.png" alt="WhatsApp Web" className="w-64 h-64 mx-auto" />
             <h1 className="text-4xl text-gray-600 font-light mt-6">WhatsApp Web Clone</h1>
             <p className="text-gray-500 mt-4 text-base">
                 Send and receive messages without keeping your phone online.<br/>
@@ -82,7 +78,7 @@ const WelcomeScreen = () => (
             </p>
             <hr className="w-full max-w-sm my-8 mx-auto border-gray-200" />
             <div className="text-sm text-gray-400 flex items-center justify-center">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6.364-8.364l-1.414-1.414M20.364 6.636l-1.414 1.414M18 12h2M4 12H2m14.364 8.364l-1.414-1.414M5.636 5.636L4.222 4.222m11.314 0l-1.414 1.414"></path></svg>
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6.364-8.364l-1.414-1.414M20.364 6.636l-1.414 1.414M18 12h2M4 12H2m14.364 8.364l-1.414-1.414M5.636 5.636L4.222 4.222m11.314 0l-1.414 1.414"></path></svg>
                 This is a demo project. Messages are not end-to-end encrypted.
             </div>
         </div>
@@ -105,7 +101,8 @@ function App() {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/messages`);
+            // Use relative path for local development, which the proxy will handle
+            const response = await fetch('/api/messages');
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             if (data.success) {
@@ -147,7 +144,7 @@ function App() {
         if (!newMessage.trim() || !selectedConversation) return;
         setIsSending(true);
         try {
-            const response = await fetch(`${API_URL}/api/messages`, {
+            const response = await fetch('/api/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ wa_id: selectedConversation.id, text: newMessage, name: selectedConversation.name }),
@@ -171,7 +168,7 @@ function App() {
             for (const file of files) {
                 const text = await file.text();
                 const payload = JSON.parse(text);
-                await fetch(`${API_URL}/api/webhook`, {
+                await fetch('/api/webhook', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ metaData: payload.metaData }),
