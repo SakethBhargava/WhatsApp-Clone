@@ -74,7 +74,7 @@ const ChatInterface = ({ selectedConversation, messages, newMessage, setNewMessa
 const WelcomeScreen = () => (
     <div className="flex flex-col items-center justify-center h-full w-full bg-gray-100 text-center p-8 border-l border-gray-300 hidden lg:flex">
         <div className="max-w-lg">
-            <img src="https://static.whatsapp.net/rsrc.php/v3/y7/r/DSxOAUB0raA.png" alt="WhatsApp Web" className="w-64 h-64 mx-auto" />
+            <img src="https://static.whatsapp.net/rsrc.php/v3/y7/r/DSxOAUB0raA.png" alt="WhatsApp Web" className="w-20 h-20 mx-auto" />
             <h1 className="text-4xl text-gray-600 font-light mt-6">WhatsApp Web Clone</h1>
             <p className="text-gray-500 mt-4 text-base">
                 Send and receive messages without keeping your phone online.<br/>
