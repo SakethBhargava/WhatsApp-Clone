@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose'); // <--- ADD THIS LINE
 const ProcessedMessage = require('../models/message');
 const router = express.Router();
 
