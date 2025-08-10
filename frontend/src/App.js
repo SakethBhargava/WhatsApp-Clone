@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+// --- Configuration ---
+const API_BASE_URL = process.env.REACT_APP_API_URL; // <-- REPLACE WITH YOUR LIVE URL
+
 // --- Helper Functions ---
 const formatTimestamp = (isoString) => {
     if (!isoString) return '...';
@@ -101,8 +104,7 @@ function App() {
 
     const fetchData = async () => {
         try {
-            // Use relative path for local development, which the proxy will handle
-            const response = await fetch('/api/messages');
+            const response = await fetch(`${API_BASE_URL}/api/messages`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             if (data.success) {
@@ -142,16 +144,50 @@ function App() {
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!newMessage.trim() || !selectedConversation) return;
+
+        const tempMessageId = `temp_${Date.now()}`;
+        const optimisticMessage = {
+            _id: tempMessageId,
+            id: tempMessageId,
+            wa_id: selectedConversation.id,
+            text: newMessage,
+            timestamp: new Date().toISOString(),
+            from_me: true,
+            status: 'sent',
+        };
+
+        setAllMessages(prev => ({
+            ...prev,
+            [selectedConversation.id]: {
+                ...prev[selectedConversation.id],
+                messages: [...(prev[selectedConversation.id]?.messages || []), optimisticMessage]
+            }
+        }));
+        
+        setConversations(prev => {
+            const updatedConvo = {
+                ...selectedConversation,
+                lastMessage: newMessage,
+                timestamp: optimisticMessage.timestamp,
+            };
+            const otherConvos = prev.filter(c => c.id !== selectedConversation.id);
+            return [updatedConvo, ...otherConvos];
+        });
+
+        const messageToSend = newMessage;
+        setNewMessage('');
         setIsSending(true);
+
         try {
-            const response = await fetch('/api/messages', {
+            await fetch(`${API_BASE_URL}/api/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ wa_id: selectedConversation.id, text: newMessage, name: selectedConversation.name }),
+                body: JSON.stringify({
+                    wa_id: selectedConversation.id,
+                    text: messageToSend,
+                    name: selectedConversation.name
+                }),
             });
-            if (!response.ok) throw new Error('Failed to send message');
-            setNewMessage('');
-            await fetchData();
         } catch (err) {
             console.error("Error sending message:", err);
             setError("Could not send message.");
@@ -168,7 +204,7 @@ function App() {
             for (const file of files) {
                 const text = await file.text();
                 const payload = JSON.parse(text);
-                await fetch('/api/webhook', {
+                await fetch(`${API_BASE_URL}/api/webhook`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ metaData: payload.metaData }),

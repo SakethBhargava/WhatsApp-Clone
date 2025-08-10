@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose'); // <--- ADD THIS LINE
+const mongoose = require('mongoose');
 const ProcessedMessage = require('../models/message');
 const router = express.Router();
 
@@ -102,12 +102,12 @@ router.post('/messages', async (req, res) => {
             return res.status(400).json({ success: false, message: 'wa_id and text are required' });
         }
 
+        // timestamp is now handled by the schema default
         const newMessage = new ProcessedMessage({
             id: `demo_${new mongoose.Types.ObjectId()}`,
             wa_id,
             name: name,
             text,
-            timestamp: new Date(),
             from_me: true,
             status: 'sent',
         });

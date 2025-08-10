@@ -19,7 +19,8 @@ const messageSchema = new mongoose.Schema({
     },
     timestamp: { 
         type: Date, 
-        required: true 
+        required: true,
+        default: Date.now // <-- UPDATED
     },
     from_me: { 
         type: Boolean, 
